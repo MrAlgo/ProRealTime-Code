@@ -12,11 +12,11 @@ aMax = Highest[20](High)
 aMin = Lowest[20](Low)
 SupTnd = SuperTrend[1.5,17]
 RngOk = (High-Low)/(aMax-aMin)<0.5
-N = 1
+PositionSize = 1
 
 //Entry
 If aMin[1]<aMin[2] And High<aMax[1] And Close>Open And RngOk And Close>SupTnd Then
-Buy N PerPoint at Market
+Buy PositionSize PerPoint at Market
 EndIf
 
 //TRAILING STOP
