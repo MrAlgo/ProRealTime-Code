@@ -1,0 +1,93 @@
+//-------------------------------------------------------------------------
+// Main code : RSI 2 Periods DAX V2 
+// Based on the classic RSI 2 Periods trade but with additional moving avegrages. Idea and work by ST and MC.
+//-------------------------------------------------------------------------
+//IN/OUT Sampled, 1 Pass, 70/30 from Jan 2009 - June 2015
+
+DEFPARAM CUMULATEORDERS = FALSE
+
+//Variables
+BIGMovingAVGLong = Average[110](close) //110
+//BIGMovingAVGShort = Average[135](close) //135
+CUMRSI = SUMMATION[2](RSI[2](close))
+PostionSize = 2
+
+//Long Entry
+IF close > BIGMovingAVGLong and CUMRSI < 40 then //40
+BUY PostionSize perpoint at market
+ENDIF
+
+If LongOnMarket AND CUMRSI > 130 THEN //130
+SELL AT MARKET
+ENDIF
+
+
+//Short Entry
+//IF close < BIGMovingAVGShort and CUMRSI > 145 THEN //145
+//SELLSHORT PostionSize perpoint at market
+//ENDIF
+//
+//If SHORTONMARKET AND CUMRSI < 125 THEN //125
+//EXITSHORT AT MARKET
+//ENDIF
+
+
+//TRAILING STOP
+TSL = 28 //28
+//TSS = 11 //11
+
+if not onmarket then
+MAXPRICE = 0
+//MINPRICE = close
+EXITPRICE = 0
+ENDIF
+
+if longonmarket then
+MAXPRICE = MAX(MAXPRICE,close)
+if MAXPRICE-tradeprice(1)>=TSL*pointsize then
+EXITPRICE = MAXPRICE-TSL*pointsize
+ENDIF
+ENDIF
+
+//if shortonmarket then
+//MINPRICE = MIN(MINPRICE,close)
+//if tradeprice(1)-MINPRICE>=TSS*pointsize then
+//EXITPRICE = MINPRICE+TSS*pointsize
+//ENDIF
+//ENDIF
+
+if onmarket and EXITPRICE>0 then
+//EXITSHORT AT EXITPRICE STOP
+SELL AT EXITPRICE STOP
+ENDIF
+
+// Last x candles stop / dynamic moving stop (-x points)
+
+Once Candles = 30 // Reset Dynamic Stop when not on market, not optimizable
+
+IF LONGONMARKET THEN
+Candles = 75 //75
+ENDIF
+//IF SHORTONMARKET THEN
+//Candles = 28 //28
+//ENDIF
+
+//e=Highest[Candles](high)
+f=Lowest[Candles](low)
+
+if longonmarket  then
+laststop = f[1]
+endif
+
+//if shortonmarket  then
+//laststop = e[1]
+//endif
+
+if onmarket then
+sell at laststop stop
+//exitshort at laststop stop
+endif
+
+SET TARGET %PROFIT 4 //4
+
+//GRAPH laststop = e   -25 coloured(255,0,0) AS "laststop"
