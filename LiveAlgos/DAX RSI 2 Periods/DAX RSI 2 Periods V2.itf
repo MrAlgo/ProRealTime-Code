@@ -10,7 +10,7 @@ DEFPARAM CUMULATEORDERS = FALSE
 BIGMovingAVGLong = Average[110](close) //110
 //BIGMovingAVGShort = Average[135](close) //135
 CUMRSI = SUMMATION[2](RSI[2](close))
-PostionSize = 2
+PostionSize = 1
 
 //Long Entry
 IF close > BIGMovingAVGLong and CUMRSI < 40 then //40
