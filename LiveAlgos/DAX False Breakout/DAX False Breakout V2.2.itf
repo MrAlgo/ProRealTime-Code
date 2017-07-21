@@ -1,0 +1,56 @@
+//-------------------------------------------------------------------------
+// Main code : DAX15Min False Breakout V2.2
+// Orignal idea from Descouma, Reworked by ST and MC to remove seasonal code and add dynmaic stop and trailing stop.
+//-------------------------------------------------------------------------
+// 2 Point Spread, Tick by tick Backtest, Re-Optimised Period: 25th May 2016 - 25th May 2017
+// **Reopp due 25th May 2018**
+
+DEFPARAM CumulateOrders = false
+
+// Variables
+aMax = Highest[20](High)
+aMin = Lowest[20](Low)
+SupTnd = SuperTrend[1.5,17]
+RngOk = (High-Low)/(aMax-aMin)<0.5
+N = 1
+
+//Entry
+If aMin[1]<aMin[2] And High<aMax[1] And Close>Open And RngOk And Close>SupTnd Then
+Buy N PerPoint at Market
+EndIf
+
+//TRAILING STOP
+TS = 75
+
+IF NOT ONMARKET THEN
+MAXPRICE = 0
+EXITPRICE = 0
+ENDIF
+
+If LONGONMARKET THEN
+MAXPRICE = MAX(MAXPRICE,close)
+IF MAXPRICE-TRADEPRICE(1)>=TS*POINTSIZE then
+EXITPRICE = MAXPRICE-TS*POINTSIZE
+ENDIF
+ENDIF
+
+IF ONMARKET AND EXITPRICE>0 then
+SELL AT EXITPRICE STOP
+ENDIF
+
+// Last x candles stop / dynamic moving stop (-x points)
+Once Candles = 70
+
+f=Lowest[Candles](low)
+IF LONGONMARKET THEN
+laststop = f[1]
+endif
+
+IF ONMARKET THEN
+SELL AT laststop -25 stop
+ENDIF
+
+//SET STOP %LOSS 2 //(Extra safety)
+SET TARGET %PROFIT 2.75
+
+//GRAPH laststop -25 coloured(255,0,0) AS "laststop"
